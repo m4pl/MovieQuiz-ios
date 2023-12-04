@@ -5,6 +5,8 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
     
     private let questions: [QuizQuestion] = [
         QuizQuestion(
@@ -64,6 +66,10 @@ final class MovieQuizViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        imageView.layer.masksToBounds = true
+        imageView.layer.cornerRadius = 20
+        
         let nextQuestion = questions[currentQuestionIndex]
         let viewModel = convert(nextQuestion)
         show(model: viewModel)
@@ -84,13 +90,16 @@ final class MovieQuizViewController: UIViewController {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
+        noButton.isEnabled = true
+        yesButton.isEnabled = true
     }
     
     private func show(quiz result: QuizResultsViewModel) {
         let alert = UIAlertController(
             title: result.title,
             message: result.text,
-            preferredStyle: .alert)
+            preferredStyle: .alert
+        )
         
         let action = UIAlertAction(title: result.buttonText, style: .default) { _ in
             self.currentQuestionIndex = 0
@@ -109,14 +118,14 @@ final class MovieQuizViewController: UIViewController {
     private func showAnswerResult(isCorrect: Bool) {
         let color = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
+        imageView.layer.borderColor = color
+        imageView.layer.borderWidth = 8
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
+        
         if (isCorrect) {
             correctAnswers += 1
         }
-        
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = color
-        imageView.layer.cornerRadius = 20
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.showNextQuestionOrResults()
