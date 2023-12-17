@@ -10,11 +10,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    private let questionsAmount: Int = 10
+    private let questionsAmount: Int = 1
     private var currentQuestion: QuizQuestion?
+    private var alertPresenter: AlertPresenter?
     private var questionFactory: QuestionFactory = {
         let questionFactory = QuestionFactoryImpl()
-        questionFactory.repository = QuestionsRepositoryImpl()
+        questionFactory.setRepository(QuestionsRepositoryImpl())
         return questionFactory
     }()
     
@@ -23,15 +24,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 20
-        questionFactory.delegate = self
+        questionFactory.setDelegate(self)
         questionFactory.requestNextQuestion()
     }
     
     // MARK: - QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
+        guard let question = question else { return }
         
         currentQuestion = question
         let viewModel = convert(question)
@@ -41,16 +40,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
+        guard let currentQuestion = currentQuestion else { return }
         showAnswerResult(isCorrect: currentQuestion.correctAnswer == true)
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
+        guard let currentQuestion = currentQuestion else {  return }
         showAnswerResult(isCorrect: currentQuestion.correctAnswer == false)
     }
     
@@ -64,24 +59,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(
+        alertPresenter = AlertPresenterImpl()
+        alertPresenter?.setParrentPresenter(self)
+
+        let alert = AlertModel(
             title: result.title,
             message: result.text,
-            preferredStyle: .alert
-        )
-        
-        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+            buttonText: result.buttonText
+        ) { [weak self] in
             guard let self = self else { return }
             
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-            
             self.questionFactory.requestNextQuestion()
         }
         
-        alert.addAction(action)
-        
-        self.present(alert, animated: true, completion: nil)
+        alertPresenter?.presentAlert(alert)
     }
     
     private func showAnswerResult(isCorrect: Bool) {

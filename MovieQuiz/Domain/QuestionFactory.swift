@@ -8,15 +8,23 @@
 import Foundation
 
 protocol QuestionFactory {
-    var repository: QuestionsRepository? { get set }
-    var delegate: QuestionFactoryDelegate? { get set }
+    func setRepository(_ repository: QuestionsRepository)
+    func setDelegate(_ delegate: QuestionFactoryDelegate)
     func requestNextQuestion()
 }
 
-internal class QuestionFactoryImpl: Formatter, @unchecked Sendable, QuestionFactory {
+internal class QuestionFactoryImpl: QuestionFactory {
     
-    var repository: QuestionsRepository?
-    weak var delegate: QuestionFactoryDelegate?
+    private var repository: QuestionsRepository?
+    private weak var delegate: QuestionFactoryDelegate?
+    
+    func setRepository(_ repository: QuestionsRepository) {
+        self.repository = repository
+    }
+    
+    func setDelegate(_ delegate: QuestionFactoryDelegate) {
+        self.delegate = delegate
+    }
     
     func requestNextQuestion() {
         guard let questions = repository?.getQuestions() else {
