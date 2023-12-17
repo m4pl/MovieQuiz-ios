@@ -8,26 +8,26 @@
 import Foundation
 
 protocol QuestionFactory {
-    func requestNextQuestion() -> QuizQuestion?
+    var repository: QuestionsRepository? { get set }
+    var delegate: QuestionFactoryDelegate? { get set }
+    func requestNextQuestion()
 }
 
-internal class QuestionFactoryImpl: QuestionFactory {
+internal class QuestionFactoryImpl: Formatter, @unchecked Sendable, QuestionFactory {
     
-    let repository: QuestionsRepository
+    var repository: QuestionsRepository?
+    weak var delegate: QuestionFactoryDelegate?
     
-    init(repository: QuestionsRepository) {
-        self.repository = repository
-    }
-    
-    func requestNextQuestion() -> QuizQuestion? {
-        guard let questions = repository.getQuestions() else {
-            return nil
+    func requestNextQuestion() {
+        guard let questions = repository?.getQuestions() else {
+            return
         }
         
         guard let index = (0..<questions.count).randomElement() else {
-            return nil
+            return
         }
         
-        return questions[safe: index]
+        let question = questions[safe: index]
+        delegate?.didReceiveNextQuestion(question: question)
     }
 }
