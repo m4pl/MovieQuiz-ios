@@ -10,13 +10,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    private let questionsAmount: Int = 1
+    private let questionsAmount: Int = 5
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenter?
     private var questionFactory: QuestionFactory = {
         let questionFactory = QuestionFactoryImpl()
         questionFactory.setRepository(QuestionsRepositoryImpl())
         return questionFactory
+    }()
+    private var quizResultsFactory: QuizResultsFactory = {
+        let quizResultsFactory = QuizResultsFactoryImpl()
+        quizResultsFactory.setService(StatisticServiceImpl())
+        return quizResultsFactory
     }()
     
     override func viewDidLoad() {
@@ -97,12 +102,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let text = "Ваш результат: \(correctAnswers)/10"
-            let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз"
-            )
+            guard let viewModel = quizResultsFactory.getQuizResults(correct: correctAnswers, total: questionsAmount) else { return }
             show(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
