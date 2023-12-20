@@ -69,7 +69,8 @@ class StatisticServiceImpl: StatisticService {
             date: Date()
         )
         
-        totalAccuracy = (lasttotalAccuracy * Double(lastGamesCount) + (Double(count) / Double(amount))) / Double(lastGamesCount + 1)
+        let sumOfAccuracy = (amount > 0) ? (lasttotalAccuracy * Double(lastGamesCount) + (Double(count) / Double(amount))) : 0
+        totalAccuracy = (lastGamesCount >= 0) ? sumOfAccuracy / Double(lastGamesCount + 1) : 0
         gamesCount = lastGamesCount + 1
         
         if(newGame.isBetterThan(lastGame)) {
