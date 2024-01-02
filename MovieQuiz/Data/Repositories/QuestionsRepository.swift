@@ -8,69 +8,41 @@
 import Foundation
 
 protocol QuestionsRepository {
-    func getQuestions() -> [QuizQuestion]?
+    func setMoviesLoader(_ moviesLoader: MoviesLoader)
+    func loadData(onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void)
+    func getMovies() -> [MostPopularMovie]?
 }
 
 internal class QuestionsRepositoryImpl: QuestionsRepository {
     
-    private let questions: [QuizQuestion] = [
-        QuizQuestion(
-            image: "The Godfather",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "The Dark Knight",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "Kill Bill",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "The Avengers",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "Deadpool",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "The Green Knight",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: true
-        ),
-        QuizQuestion(
-            image: "Old",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false
-        ),
-        QuizQuestion(
-            image: "The Ice Age Adventures of Buck Wild",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false
-        ),
-        QuizQuestion(
-            image: "Tesla",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false
-        ),
-        QuizQuestion(
-            image: "Vivarium",
-            text: "Рейтинг этого фильма больше чем 6?",
-            correctAnswer: false
-        )
-    ]
+    private var moviesLoader: MoviesLoader?
     
-    func getQuestions() -> [QuizQuestion]? {
-        if(questions.isEmpty) {
+    private var movies: [MostPopularMovie] = []
+    
+    func setMoviesLoader(_ moviesLoader: MoviesLoader) {
+        self.moviesLoader = moviesLoader
+    }
+    
+    func loadData(onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void) {
+        moviesLoader?.loadMovies { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let mostPopularMovies):
+                    self.movies = mostPopularMovies.items
+                    onSuccess()
+                case .failure(let error):
+                    onFailure(error)
+                }
+            }
+        }
+    }
+    
+    func getMovies() -> [MostPopularMovie]? {
+        if(movies.isEmpty) {
             return nil
         }
         
-        return questions
+        return movies
     }
 }
