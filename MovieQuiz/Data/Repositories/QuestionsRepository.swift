@@ -30,7 +30,12 @@ internal class QuestionsRepositoryImpl: QuestionsRepository {
                 switch result {
                 case .success(let mostPopularMovies):
                     self.movies = mostPopularMovies.items
-                    onSuccess()
+                    
+                    if (mostPopularMovies.errorMessage.isEmpty) {
+                        onSuccess()
+                    } else {
+                        onFailure(MoviesError.unknown)
+                    }
                 case .failure(let error):
                     onFailure(error)
                 }

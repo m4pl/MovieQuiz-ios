@@ -43,6 +43,9 @@ internal class QuestionFactoryImpl: QuestionFactory {
             guard let self = self else { return }
             
             guard let movies = repository?.getMovies() else {
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.didFailToLoadData(with: MoviesError.noMovies)
+                }
                 return
             }
             
@@ -56,6 +59,9 @@ internal class QuestionFactoryImpl: QuestionFactory {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
                 print("Failed to load image")
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.didFailToLoadData(with: MoviesError.noPreview)
+                }
             }
             
             let rating = Float(movie.rating) ?? 0
