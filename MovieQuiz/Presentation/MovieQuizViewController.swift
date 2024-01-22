@@ -17,7 +17,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 20
-        presenter.initialization(self)
+        presenter.initController(self)
+        presenter.initQuestionFactory(self)
         alertPresenter.setParrentPresenter(self)
     }
 

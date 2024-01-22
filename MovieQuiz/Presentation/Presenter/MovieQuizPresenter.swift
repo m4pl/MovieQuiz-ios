@@ -30,10 +30,13 @@ final class MovieQuizPresenter {
     private var correctAnswers = 0
     private var currentQuestionIndex: Int = 0
     
-    internal func initialization(_ viewController: MovieQuizViewController) {
+    internal func initController(_ viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         viewController.showLoadingIndicator()
-        questionFactory.setDelegate(viewController)
+    }
+    
+    internal func initQuestionFactory(_ delegate: QuestionFactoryDelegate) {
+        questionFactory.setDelegate(delegate)
         questionFactory.loadData()
     }
     
@@ -112,7 +115,7 @@ final class MovieQuizPresenter {
         viewController?.presentAlert(alert)
     }
     
-    private func didAnswer(isYes: Bool) {
+    internal func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else { return }
         
         let givenAnswer = isYes
@@ -120,7 +123,7 @@ final class MovieQuizPresenter {
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
 
-    private func convert(_ model: QuizQuestion) -> QuizStepViewModel {
+    internal func convert(_ model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
