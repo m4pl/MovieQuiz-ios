@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     weak var viewController: MovieQuizViewControllerProtocol?
     
@@ -33,11 +33,23 @@ final class MovieQuizPresenter {
     internal func initController(_ viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         viewController.showLoadingIndicator()
+        questionFactory.setDelegate(self)
+        questionFactory.loadData()
     }
     
-    internal func initQuestionFactory(_ delegate: QuestionFactoryDelegate) {
-        questionFactory.setDelegate(delegate)
-        questionFactory.loadData()
+    // MARK: - QuestionFactoryDelegate
+    internal func didReceiveNextQuestion(question: QuizQuestion?) {
+        didRecieveNextQuestion(question)
+    }
+    
+    // MARK: - QuestionFactoryDelegate
+    internal func didLoadDataFromServer() {
+        requestNextQuestion()
+    }
+    
+    // MARK: - QuestionFactoryDelegate
+    internal func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
     }
     
     internal func yesButtonClicked() {
@@ -82,17 +94,15 @@ final class MovieQuizPresenter {
             ) { [weak self] in
                 guard let self = self else { return }
                 
-                self.viewController?.showLoadingIndicator()
                 self.currentQuestionIndex = 0
                 self.correctAnswers = 0
-                self.questionFactory.requestNextQuestion()
+                self.requestNextQuestion()
             }
             
             viewController?.presentAlert(alert)
         } else {
             currentQuestionIndex += 1
-            viewController?.showLoadingIndicator()
-            questionFactory.requestNextQuestion()
+            requestNextQuestion()
         }
     }
     
@@ -106,10 +116,10 @@ final class MovieQuizPresenter {
         ) { [weak self] in
             guard let self = self else { return }
             
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
             self.viewController?.showLoadingIndicator()
-            currentQuestionIndex = 0
-            correctAnswers = 0
-            questionFactory.requestNextQuestion()
+            self.questionFactory.loadData()
         }
         
         viewController?.presentAlert(alert)
@@ -122,7 +132,7 @@ final class MovieQuizPresenter {
         
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
-
+    
     internal func convert(_ model: QuizQuestion) -> QuizStepViewModel {
         QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),

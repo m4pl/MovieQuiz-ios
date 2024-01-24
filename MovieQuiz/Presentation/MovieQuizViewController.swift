@@ -1,9 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol, QuestionFactoryDelegate {
-    
-    private let presenter = MovieQuizPresenter()
-    private let alertPresenter: AlertPresenter = AlertPresenterImpl()
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
@@ -11,6 +8,13 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet private var noButton: UIButton!
     @IBOutlet private var yesButton: UIButton!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+
+    private let presenter = MovieQuizPresenter()
+    private let alertPresenter: AlertPresenter = AlertPresenterImpl()
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,31 +22,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         imageView.layer.masksToBounds = true
         imageView.layer.cornerRadius = 20
         presenter.initController(self)
-        presenter.initQuestionFactory(self)
         alertPresenter.setParrentPresenter(self)
-    }
-
-    @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
-    }
-    
-    @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.noButtonClicked()
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didRecieveNextQuestion(question)
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    func didLoadDataFromServer() {
-        presenter.requestNextQuestion()
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    func didFailToLoadData(with error: Error) {
-        presenter.showNetworkError(message: error.localizedDescription)
     }
     
     internal func show(model step: QuizStepViewModel) {
@@ -80,5 +60,13 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     internal func hideLoadingIndicator() {
         activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
+    }
+    
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        presenter.yesButtonClicked()
+    }
+    
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        presenter.noButtonClicked()
     }
 }
